@@ -36,8 +36,26 @@ export function Footer() {
               <h3 className="font-semibold text-slate-900">Tentang Kami</h3>
               <ul className="mt-6 space-y-4 text-sm text-slate-600">
                 <li><Link href="/about" className="transition-colors hover:text-sky-600">Profil 22Mart</Link></li>
-                <li>0856-9652-5184</li>
-                <li>halo@22mart.id</li>
+                <li>
+                  <a href="https://wa.me/6282292229500" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-sky-600">
+                    0822-9222-9500
+                  </a>
+                </li>
+                <li>
+                  <a href="https://wa.me/6282292229550" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-sky-600">
+                    0822-9222-9550
+                  </a>
+                </li>
+                <li>
+                  <a href="https://instagram.com/22martgowa" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-sky-600">
+                    IG: 22martgowa
+                  </a>
+                </li>
+                <li>
+                  <a href="https://tiktok.com/@22margowaa" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-sky-600">
+                    TikTok: 22margowaa
+                  </a>
+                </li>
               </ul>
             </div>
           </div>

@@ -57,7 +57,7 @@ export default function AboutPage() {
                   
                   <div className="space-y-4 text-sm text-slate-600 leading-relaxed sm:text-base">
                     <p>
-                      Berawal dari kehadiran outlet fisik kami yang ikonik, <span className="font-bold text-sky-600">22Mart</span> didirikan oleh <span className="font-bold text-sky-600">Syamsurizal</span> pada <span className="font-bold text-sky-600">22 Februari 2025</span> sebagai langkah inovatif dalam menghadirkan kemudahan berbelanja kebutuhan harian di era digital. Kami memahami bahwa kepercayaan adalah segalanya, itulah mengapa kami menggabungkan kualitas layanan toko fisik dengan kepraktisan belanja online.
+                      Berawal dari kehadiran outlet fisik kami yang ikonik di <span className="font-bold text-slate-700">jln. poros limbung-takalar bontotangnga</span>, <span className="font-bold text-sky-600">22Mart</span> didirikan oleh <span className="font-bold text-sky-600">Bapak Syamsurizal S.Si.T , M.Mar.Eng.</span> pada <span className="font-bold text-sky-600">22 Februari 2025</span> sebagai langkah inovatif dalam menghadirkan kemudahan berbelanja kebutuhan harian di era digital. Kami memahami bahwa kepercayaan adalah segalanya, itulah mengapa kami menggabungkan kualitas layanan toko fisik dengan kepraktisan belanja online.
                     </p>
                     <p>
                       Sejak awal berdirinya, 22Mart berkomitmen untuk menjadi solusi utama bagi masyarakat dalam memenuhi berbagai kebutuhan harian, mulai dari bahan pokok, makanan segar, hingga perlengkapan rumah tangga. Dengan dukungan teknologi dan layanan antar yang sigap, kami memastikan setiap pesanan Anda sampai dalam kondisi terbaik.

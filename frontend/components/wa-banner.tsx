@@ -8,8 +8,8 @@ export function WaBanner() {
 
   const handleSendWa = () => {
     if (!message.trim()) return;
-    // Nomor WA Admin (ganti sesuai dengan nomor asli admin Anda)
-    const phone = "6285696525184"; 
+    // Nomor WA Admin
+    const phone = "6282292229500";
     const text = encodeURIComponent(message);
     window.open(`https://wa.me/${phone}?text=${text}`, "_blank");
   };

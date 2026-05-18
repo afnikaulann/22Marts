@@ -277,7 +277,7 @@ export default function DetailPesananPage() {
           Jln. Poros Limbung - Takalar, Bontontangnga
         </p>
         <p className="text-xs text-zinc-400">
-          Kontak: 085696525184
+          Kontak: 082292229500 / 082292229550
         </p>
         <div className="border-b border-dashed border-zinc-300 w-full my-6" />
       </div>
