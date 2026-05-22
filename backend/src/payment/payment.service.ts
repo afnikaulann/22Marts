@@ -74,7 +74,8 @@ export class PaymentService {
       throw new BadRequestException('Alamat tidak ditemukan');
     }
 
-    // Subtotal already calculated above
+    const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+
     // Validate total purchase amount (max 130,000)
     const MAX_TOTAL = 130000; // in Rupiah
     if (subtotal > MAX_TOTAL) {
