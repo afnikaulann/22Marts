@@ -144,7 +144,7 @@ export default function PengaturanAkunPage() {
                 className="h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500"
               />
             </div>
-            <Button className="h-9 w-full bg-zinc-900 text-sm" onClick={handleSave} disabled={saving}>
+            <Button className="h-9 w-full bg-zinc-900 text-white text-sm" onClick={handleSave} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Simpan Profil"}
             </Button>
           </div>
@@ -204,7 +204,7 @@ export default function PengaturanAkunPage() {
                 </button>
               </div>
             </div>
-            <Button className="h-9 w-full bg-zinc-900 text-sm" onClick={handleSave} disabled={saving}>
+            <Button className="h-9 w-full bg-zinc-900 text-white text-sm" onClick={handleSave} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ubah Password"}
             </Button>
           </div>
