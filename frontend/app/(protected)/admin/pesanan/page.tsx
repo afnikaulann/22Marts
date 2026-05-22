@@ -116,19 +116,20 @@ export default function KelolaPesananPage() {
     }
 
     // Build CSV
-    const header = ['No', 'No. Pesanan', 'Tanggal', 'Nama Pelanggan', 'Email', 'No HP', 'Produk', 'Qty', 'Total (Rp)', 'Diskon (Rp)', 'Status Pembayaran', 'Status Pesanan'];
+    const header = ['No', 'No. Pesanan', 'Tanggal', 'jam', 'Nama Pelanggan', 'Produk', 'Qty', 'Total (Rp)', 'Diskon (Rp)', 'Status Pembayaran', 'Status Pesanan'];
     const rows = filtered.map((order, idx) => {
       const itemNames = order.items?.map(i => i.product?.name || '-').join('; ') || '-';
       const itemQty = order.items?.map(i => i.quantity).join('; ') || '-';
-      const date = new Date(order.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const dateObj = new Date(order.createdAt);
+      const tanggal = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const jam = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
       const paymentLabel = order.paymentStatus === 'settlement' ? 'Lunas' : (order.paymentStatus || 'Pending');
       return [
         idx + 1,
         order.orderId,
-        date,
+        tanggal,
+        jam,
         order.user?.name || order.shippingName || '-',
-        order.user?.email || '-',
-        order.shippingPhone || '-',
         `"${itemNames}"`,
         `"${itemQty}"`,
         order.total,
