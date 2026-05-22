@@ -11,7 +11,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'http://127.0.0.1:3000',
-      'https://22mart.my.id',
+      'https://22mart.id',
       'http://43.129.50.42:3000'
     ],
     credentials: true,

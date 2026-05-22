@@ -52,15 +52,18 @@ export class PaymentService {
       };
     }
 
-    // Get cart
-    const cart = await this.prisma.cartItem.findMany({
+    // Get cart items
+    const rawCart = await this.prisma.cartItem.findMany({
       where: { userId: data.userId },
       include: { product: true },
     });
 
-    if (cart.length === 0) {
+    if (rawCart.length === 0) {
       throw new BadRequestException('Keranjang kosong');
     }
+
+    // No limit on distinct products; use all items in cart
+    const cart = rawCart;
 
     // Get address
     const address = await this.prisma.address.findFirst({
@@ -71,9 +74,13 @@ export class PaymentService {
       throw new BadRequestException('Alamat tidak ditemukan');
     }
 
-    // Calculate total
-    const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-
+    // Subtotal already calculated above
+    // Validate total purchase amount (max 130,000)
+    const MAX_TOTAL = 130000; // in Rupiah
+    if (subtotal > MAX_TOTAL) {
+      throw new BadRequestException(`Total pembelian (${subtotal}) melebihi batas maksimum ${MAX_TOTAL}`);
+    }
+    
     // Apply promo if provided
     let discount = 0;
     if (data.promoCode) {
@@ -216,6 +223,14 @@ export class PaymentService {
       },
       include: { items: { include: { product: true } } },
     });
+
+    // Kurangi stok produk
+    for (const item of cart) {
+      await this.prisma.product.update({
+        where: { id: item.productId },
+        data: { stock: { decrement: item.quantity } }
+      });
+    }
 
     // Clear cart
     await this.prisma.cartItem.deleteMany({ where: { userId: data.userId } });
