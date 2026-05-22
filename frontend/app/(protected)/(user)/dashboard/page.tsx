@@ -157,9 +157,9 @@ export default function DashboardPage() {
   }));
 
   const pieData = [
-    { name: "Diproses", value: countByStatus.DIPROSES },
-    { name: "Dikirim", value: countByStatus.DIKIRIM },
-    { name: "Selesai", value: countByStatus.SELESAI },
+    { name: "Diproses", value: countByStatus.DIPROSES, color: "#f59e0b" },
+    { name: "Dikirim", value: countByStatus.DIKIRIM, color: "#3b82f6" },
+    { name: "Selesai", value: countByStatus.SELESAI, color: "#22c55e" },
   ].filter((d) => d.value > 0);
 
   // Recent orders - latest 5
@@ -267,8 +267,8 @@ export default function DashboardPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={pieData} cx="50%" cy="50%" innerRadius={35} outerRadius={55} dataKey="value" paddingAngle={2}>
-                    {pieData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e4e4e7" }} />
