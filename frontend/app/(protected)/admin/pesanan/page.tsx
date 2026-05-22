@@ -53,7 +53,7 @@ export default function KelolaPesananPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [mounted, setMounted] = useState(false);
   const [dateRange, setDateRange] = useState("overall");
-  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+
 
   useEffect(() => {
     setMounted(true);
@@ -97,65 +97,6 @@ export default function KelolaPesananPage() {
     return new Date(dateString).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
   }
 
-  function downloadCSV(period: '7days' | '30days' | '1year') {
-    const now = new Date();
-    const cutoff = new Date();
-    if (period === '7days') cutoff.setDate(now.getDate() - 7);
-    else if (period === '30days') cutoff.setDate(now.getDate() - 30);
-    else if (period === '1year') cutoff.setFullYear(now.getFullYear() - 1);
-
-    const filtered = orders.filter((o) => new Date(o.createdAt) >= cutoff);
-
-    const periodLabel = period === '7days' ? 'Seminggu' : period === '30days' ? 'Sebulan' : 'Setahun';
-
-    if (filtered.length === 0) {
-      toast.error(`Tidak ada pesanan dalam ${periodLabel.toLowerCase()} terakhir`);
-      return;
-    }
-
-    // Build CSV
-    const header = ['No', 'No. Pesanan', 'Tanggal', 'Nama Pelanggan', 'Email', 'No HP', 'Produk', 'Qty', 'Total (Rp)', 'Diskon (Rp)', 'Status Pembayaran', 'Status Pesanan'];
-    const rows = filtered.map((order, idx) => {
-      const itemNames = order.items?.map(i => i.product?.name || '-').join('; ') || '-';
-      const itemQty = order.items?.map(i => i.quantity).join('; ') || '-';
-      const date = new Date(order.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-      const paymentLabel = order.paymentStatus === 'settlement' ? 'Lunas' : (order.paymentStatus || 'Pending');
-      return [
-        idx + 1,
-        order.orderId,
-        date,
-        order.user?.name || order.shippingName || '-',
-        order.user?.email || '-',
-        order.shippingPhone || '-',
-        `"${itemNames}"`,
-        `"${itemQty}"`,
-        order.total,
-        order.discount || 0,
-        paymentLabel,
-        order.status
-      ].join(',');
-    });
-
-    const totalRevCSV = filtered.reduce((s, o) => s + o.total, 0);
-    rows.push('');
-    rows.push(`,,,,,,,,${totalRevCSV},,Total Pendapatan,`);
-    rows.push(`,,,,,,,,,,Total Pesanan: ${filtered.length},`);
-
-    const csvContent = '\uFEFF' + header.join(',') + '\n' + rows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const dateStr = new Date().toISOString().slice(0,10);
-    link.href = url;
-    link.download = `Laporan-Penjualan-${periodLabel}-${dateStr}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    toast.success(`Laporan ${periodLabel.toLowerCase()} terakhir berhasil diunduh (${filtered.length} pesanan)`);
-    setShowDownloadMenu(false);
-  }
 
   // Date range filter
   function getDateRangeOrders() {
@@ -235,45 +176,7 @@ export default function KelolaPesananPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {/* Download Laporan Button */}
-          <div className="relative">
-            <button
-              onClick={() => setShowDownloadMenu(!showDownloadMenu)}
-              className="flex h-9 items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
-            >
-              <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">Download Laporan</span>
-            </button>
-            {showDownloadMenu && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowDownloadMenu(false)} />
-                <div className="absolute right-0 top-full z-50 mt-1 w-52 rounded-lg border border-zinc-200 bg-white py-1 shadow-lg">
-                  <p className="px-3 py-1.5 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Pilih Rentang Waktu</p>
-                  <button
-                    onClick={() => downloadCSV('7days')}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
-                  >
-                    <Download className="h-3.5 w-3.5 text-zinc-400" />
-                    Seminggu Terakhir
-                  </button>
-                  <button
-                    onClick={() => downloadCSV('30days')}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
-                  >
-                    <Download className="h-3.5 w-3.5 text-zinc-400" />
-                    Sebulan Terakhir
-                  </button>
-                  <button
-                    onClick={() => downloadCSV('1year')}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
-                  >
-                    <Download className="h-3.5 w-3.5 text-zinc-400" />
-                    Setahun Terakhir
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
