@@ -134,7 +134,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
           
           setLastOrderCount(prev => {
             if (prev !== null && currentCount > prev) {
-              const audio = new Audio('/notif.mp3.mp3');
+              const audio = new Audio('/notif.mp3.mp3.mp3');
               audio.play().catch(e => console.log('Audio autoplay blocked by browser:', e));
             }
             return currentCount;
