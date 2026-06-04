@@ -29,6 +29,7 @@ import {
   Star,
 } from "lucide-react";
 import { toast } from "sonner";
+import { getOrders } from "@/lib/api";
 
 const tokoLinks = {
   label: "Jelajahi Toko",
@@ -97,6 +98,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchIndex, setSearchIndex] = useState(0);
+  const [lastOrderCount, setLastOrderCount] = useState<number | null>(null);
 
   const isAdmin = user?.role === "ADMIN";
   const sidebarSections = isAdmin ? adminLinks : userLinks;
@@ -117,6 +119,40 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
     setUser(JSON.parse(storedUser));
   }, [router]);
+
+  // Audio notification polling for admins
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    let intervalId: NodeJS.Timeout;
+
+    async function checkNewOrders() {
+      try {
+        const res = await getOrders();
+        if (res.data) {
+          const currentCount = res.data.length;
+          
+          setLastOrderCount(prev => {
+            if (prev !== null && currentCount > prev) {
+              const audio = new Audio('/notif.mp3');
+              audio.play().catch(e => console.log('Audio autoplay blocked by browser:', e));
+            }
+            return currentCount;
+          });
+        }
+      } catch (error) {
+        console.error("Failed to check new orders", error);
+      }
+    }
+
+    // Call once initially to set the baseline count
+    checkNewOrders();
+
+    // Poll every 10 seconds
+    intervalId = setInterval(checkNewOrders, 10000);
+
+    return () => clearInterval(intervalId);
+  }, [isAdmin]);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
