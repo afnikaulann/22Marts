@@ -522,10 +522,13 @@ export async function getPaymentStatus(orderId: string): Promise<ApiResponse<{
   }
 }
 
-export async function getOrders(userId?: string): Promise<ApiResponse<Order[]>> {
+export async function getOrders(userId?: string, noCache?: boolean): Promise<ApiResponse<Order[]>> {
   try {
-    const url = userId ? `${API_URL}/payment/orders?userId=${userId}` : `${API_URL}/payment/orders`;
-    const res = await fetch(url);
+    let url = userId ? `${API_URL}/payment/orders?userId=${userId}` : `${API_URL}/payment/orders`;
+    if (noCache) {
+      url += (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
+    }
+    const res = await fetch(url, noCache ? { cache: 'no-store' } : undefined);
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Gagal memuat pesanan' };
     return { data: json };

@@ -128,7 +128,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
     async function checkNewOrders() {
       try {
-        const res = await getOrders();
+        const res = await getOrders(undefined, true);
         if (res.data) {
           const currentCount = res.data.length;
           
