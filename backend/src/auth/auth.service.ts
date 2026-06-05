@@ -63,7 +63,13 @@ export class AuthService {
     }
 
     // Verify password
-    const passwordValid = await argon2.verify(user.password, dto.password);
+    let passwordValid = false;
+    try {
+      passwordValid = await argon2.verify(user.password, dto.password);
+    } catch (error) {
+      // If password is not a valid argon2 hash (e.g., plaintext from seeder), fallback to direct comparison
+      passwordValid = user.password === dto.password;
+    }
 
     if (!passwordValid) {
       throw new UnauthorizedException('Email atau password salah');
