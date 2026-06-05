@@ -27,7 +27,7 @@ export class PaymentService {
     const now = new Date();
     const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
     const nextOrderNumber = lastOrderNumber ? lastOrderNumber + 1 : 1;
-    const sequenceStr = String(nextOrderNumber).padStart(4, '0');
+    const sequenceStr = String(nextOrderNumber).padStart(3, '0');
     return `22MART-${dateStr}-${sequenceStr}`;
   }
 
@@ -135,15 +135,9 @@ export class PaymentService {
     const now = new Date();
     const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
     
-    // In-memory atomic cache optimization
-    if (this.orderSequenceCache.date !== dateStr) {
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date();
-      endOfDay.setHours(23, 59, 59, 999);
-
+    // In-memory atomic cache optimization (global sequence)
+    if (this.orderSequenceCache.lastSequence === 0) {
       const lastOrder = await this.prisma.order.findFirst({
-        where: { createdAt: { gte: startOfDay, lte: endOfDay } },
         orderBy: { createdAt: 'desc' },
         select: { orderId: true },
       });
@@ -160,7 +154,7 @@ export class PaymentService {
     }
 
     this.orderSequenceCache.lastSequence += 1;
-    const orderId = `22MART-${dateStr}-${String(this.orderSequenceCache.lastSequence).padStart(4, '0')}`;
+    const orderId = `22MART-${dateStr}-${String(this.orderSequenceCache.lastSequence).padStart(3, '0')}`;
 
     // Get user
     const user = await this.prisma.user.findUnique({ where: { id: data.userId } });
