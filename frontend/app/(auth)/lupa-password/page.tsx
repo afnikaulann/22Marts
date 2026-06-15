@@ -7,6 +7,7 @@ import { Mail, ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/navbar";
+import { forgotPassword } from "@/lib/api";
 
 export default function LupaPasswordPage() {
   const [loading, setLoading] = useState(false);
@@ -19,12 +20,16 @@ export default function LupaPasswordPage() {
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
 
-    // Simulate API call for now (since we don't have the actual API endpoint for forgot password yet)
-    setTimeout(() => {
-      setLoading(false);
-      setIsSubmitted(true);
-      toast.success("Link reset kata sandi telah dikirim ke email Anda.");
-    }, 1500);
+    const result = await forgotPassword(email);
+
+    setLoading(false);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+
+    setIsSubmitted(true);
+    toast.success(result.data?.message || "Link reset kata sandi telah dikirim ke email Anda.");
   }
 
   return (

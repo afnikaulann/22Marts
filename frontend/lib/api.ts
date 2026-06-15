@@ -132,6 +132,49 @@ export async function login(data: {
   }
 }
 
+export async function forgotPassword(email: string): Promise<ApiResponse<{ message: string }>> {
+  try {
+    const res = await fetch(`${API_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+
+    const json = await res.json();
+
+    if (!res.ok) {
+      return { error: json.message || 'Gagal mengirim email reset password' };
+    }
+
+    return { data: json };
+  } catch {
+    return { error: 'Terjadi kesalahan. Silakan coba lagi.' };
+  }
+}
+
+export async function resetPassword(data: {
+  token: string;
+  newPassword: string;
+}): Promise<ApiResponse<{ message: string }>> {
+  try {
+    const res = await fetch(`${API_URL}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    const json = await res.json();
+
+    if (!res.ok) {
+      return { error: json.message || 'Gagal meriset password' };
+    }
+
+    return { data: json };
+  } catch {
+    return { error: 'Terjadi kesalahan. Silakan coba lagi.' };
+  }
+}
+
 // Profile
 export async function updateProfile(userId: string, name: string): Promise<ApiResponse<{ message: string; user: { id: string; name: string; email: string; role: string } }>> {
   try {
