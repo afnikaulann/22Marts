@@ -12,12 +12,14 @@ import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto } from './dt
 
 @Injectable()
 export class AuthService {
-  private resend = new Resend(process.env.RESEND_API_KEY);
+  private resend: Resend;
 
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) {}
+  ) {
+    this.resend = new Resend(process.env.RESEND_API_KEY);
+  }
 
   async register(dto: RegisterDto) {
     // Check if user already exists
