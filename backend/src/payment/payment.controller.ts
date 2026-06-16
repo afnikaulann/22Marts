@@ -16,11 +16,11 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('payment')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class PaymentController {
   constructor(private paymentService: PaymentService) {}
 
   @Post('create')
+  @UseGuards(JwtAuthGuard)
   createTransaction(
     @Body()
     body: {
@@ -40,35 +40,38 @@ export class PaymentController {
   }
 
   @Get('orders')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   getOrders(@Query('userId') userId: string, @Req() req: any) {
     const user = req.user;
-    
+
     // If not admin, can only see own orders
     if (user.role !== 'ADMIN') {
-      return this.paymentService.getOrders(user.sub);
+      return this.paymentService.getOrders(user.id);
     }
-    
+
     // Admin can see everything, or filter by userId
     if (userId) return this.paymentService.getOrders(userId);
     return this.paymentService.getAllOrders();
   }
 
   @Get('orders/:orderId')
+  @UseGuards(JwtAuthGuard)
   async getOrder(@Param('orderId') orderId: string, @Req() req: any) {
     const user = req.user;
     const order = await this.paymentService.getOrderByOrderId(orderId);
-    
+
     if (!order) return null;
-    
+
     // If not admin and not own order, forbidden
-    if (user.role !== 'ADMIN' && order.userId !== user.sub) {
+    if (user.role !== 'ADMIN' && order.userId !== user.id) {
       throw new ForbiddenException('Anda tidak memiliki akses ke pesanan ini');
     }
-    
+
     return order;
   }
 
   @Patch('orders/:orderId/status')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   updateOrderStatus(
     @Param('orderId') orderId: string,
