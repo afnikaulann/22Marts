@@ -76,6 +76,12 @@ export class PaymentService {
 
     const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
+    // Validate minimum purchase for delivery (min 20,000)
+    const MIN_DELIVERY_TOTAL = 20000;
+    if (subtotal < MIN_DELIVERY_TOTAL) {
+      throw new BadRequestException(`Minimum pembelian untuk pengiriman adalah Rp${MIN_DELIVERY_TOTAL.toLocaleString('id-ID')}. Total belanja kamu saat ini Rp${subtotal.toLocaleString('id-ID')}.`);
+    }
+
     // Validate total purchase amount (max 130,000)
     const MAX_TOTAL = 130000; // in Rupiah
     if (subtotal > MAX_TOTAL) {

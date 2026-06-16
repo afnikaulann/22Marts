@@ -117,8 +117,15 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
       return;
     }
 
-    setUser(JSON.parse(storedUser));
-  }, [router]);
+    const parsedUser = JSON.parse(storedUser);
+    setUser(parsedUser);
+
+    // RBAC Check: If user is not ADMIN and trying to access /admin routes
+    if (parsedUser.role !== "ADMIN" && pathname.startsWith("/admin")) {
+      toast.error("Anda tidak memiliki akses ke halaman ini");
+      router.push("/dashboard");
+    }
+  }, [router, pathname]);
 
   // Audio notification polling for admins
   useEffect(() => {

@@ -17,6 +17,8 @@ export default function DaftarPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -49,8 +51,42 @@ export default function DaftarPage() {
       return;
     }
 
-    toast.success("Registrasi berhasil! Silakan masuk.");
-    router.push("/masuk");
+    setRegisteredEmail(email);
+    setIsSuccess(true);
+    toast.success("Registrasi berhasil! Silakan cek email Anda.", {
+      duration: 5000,
+    });
+    setLoading(false);
+  }
+
+  if (isSuccess) {
+    return (
+      <div className="flex min-h-screen flex-col bg-secondary/5">
+        <Navbar />
+        <main className="flex flex-1 items-center justify-center px-4 py-12">
+          <div className="w-full max-w-md">
+            <div className="rounded-2xl border border-purple-100 bg-white p-8 shadow-sm text-center">
+              <div className="h-16 w-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-6">
+                <Mail className="h-8 w-8 text-secondary" />
+              </div>
+              <h1 className="text-2xl font-bold text-foreground mb-2">Cek Email Anda</h1>
+              <p className="text-foreground/60 mb-6">
+                Link verifikasi telah dikirim ke <span className="font-semibold text-foreground">{registeredEmail}</span>. 
+                Silakan klik link tersebut untuk mengaktifkan akun Anda.
+              </p>
+              <div className="space-y-3">
+                <Button asChild className="w-full h-11 bg-primary">
+                  <Link href="/masuk">Ke Halaman Masuk</Link>
+                </Button>
+                <p className="text-xs text-foreground/40">
+                  Tidak menerima email? Periksa folder spam atau tunggu beberapa saat.
+                </p>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (

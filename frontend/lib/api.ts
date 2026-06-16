@@ -175,6 +175,46 @@ export async function resetPassword(data: {
   }
 }
 
+export async function verifyEmail(token: string): Promise<ApiResponse<{ message: string; user?: { id: string; name: string; email: string; role: string } }>> {
+  try {
+    const res = await fetch(`${API_URL}/auth/verify-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+
+    const json = await res.json();
+
+    if (!res.ok) {
+      return { error: json.message || 'Verifikasi email gagal' };
+    }
+
+    return { data: json };
+  } catch {
+    return { error: 'Terjadi kesalahan. Silakan coba lagi.' };
+  }
+}
+
+export async function resendVerification(email: string): Promise<ApiResponse<{ message: string }>> {
+  try {
+    const res = await fetch(`${API_URL}/auth/resend-verification`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+
+    const json = await res.json();
+
+    if (!res.ok) {
+      return { error: json.message || 'Gagal mengirim ulang email verifikasi' };
+    }
+
+    return { data: json };
+  } catch {
+    return { error: 'Terjadi kesalahan. Silakan coba lagi.' };
+  }
+}
+
 // Profile
 export async function updateProfile(userId: string, name: string): Promise<ApiResponse<{ message: string; user: { id: string; name: string; email: string; role: string } }>> {
   try {

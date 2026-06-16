@@ -63,6 +63,7 @@ export default function CheckoutPage() {
   const [promoApplied, setPromoApplied] = useState<{ discount: number; code: string; description?: string } | null>(null);
   const [applyingPromo, setApplyingPromo] = useState(false);
   const [isPromoModalOpen, setIsPromoModalOpen] = useState(false);
+  const [showMinDeliveryPopup, setShowMinDeliveryPopup] = useState(false);
   const { refreshCount } = useCart();
 
   useEffect(() => {
@@ -138,9 +139,16 @@ export default function CheckoutPage() {
 
   const finalTotal = cart ? cart.total - (promoApplied?.discount || 0) : 0;
 
+  const MIN_DELIVERY_TOTAL = 20000;
+
   async function handleCheckout() {
     if (!selectedAddressId) {
       toast.error("Pilih alamat pengiriman");
+      return;
+    }
+
+    if (finalTotal < MIN_DELIVERY_TOTAL) {
+      setShowMinDeliveryPopup(true);
       return;
     }
 
@@ -512,6 +520,32 @@ export default function CheckoutPage() {
         onApply={(code) => handleApplyPromo(code)}
         subtotal={cart.total}
       />
+
+      {/* Minimum Delivery Popup */}
+      {showMinDeliveryPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex flex-col items-center text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
+                <AlertCircle className="h-7 w-7 text-amber-600" />
+              </div>
+              <h2 className="mt-4 text-lg font-bold text-zinc-900">Minimum Pembelian Rp20.000</h2>
+              <p className="mt-2 text-sm text-zinc-600 leading-relaxed">
+                Untuk pesanan yang <span className="font-semibold">diantarkan</span>, minimum total pembelian adalah <span className="font-semibold text-amber-700">Rp20.000</span>. Total belanja kamu saat ini hanya <span className="font-semibold">{formatPrice(finalTotal)}</span>.
+              </p>
+              <p className="mt-2 text-xs text-zinc-400">
+                Tambahkan produk lagi atau ambil langsung ke toko untuk pesanan di bawah Rp20.000.
+              </p>
+              <button
+                onClick={() => setShowMinDeliveryPopup(false)}
+                className="mt-5 h-10 w-full rounded-lg bg-zinc-900 text-sm font-medium text-white hover:bg-zinc-800 transition-colors"
+              >
+                Mengerti
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

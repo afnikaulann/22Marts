@@ -63,4 +63,8 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   get newsletterSubscriber() {
     return this.prisma.newsletterSubscriber;
   }
+
+  get pendingRegistration() {
+    return this.prisma.pendingRegistration;
+  }
 }
