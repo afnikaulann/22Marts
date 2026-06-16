@@ -19,6 +19,14 @@ const getBaseUrl = () => {
 
 const API_URL = getBaseUrl();
 
+// Helper: get auth headers from localStorage
+function getAuthHeaders(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  const token = localStorage.getItem("token");
+  if (!token) return {};
+  return { Authorization: `Bearer ${token}` };
+}
+
 // Mapping nama kategori ke gambar Unsplash (Real Photo)
 export const categoryImages: Record<string, string> = {
   "sayur": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&h=600&fit=crop",
@@ -293,6 +301,7 @@ export async function createCategory(data: {
 
     const res = await fetch(`${API_URL}/categories`, {
       method: 'POST',
+      headers: { ...getAuthHeaders() },
       body: formData,
     });
     const json = await res.json();
@@ -317,6 +326,7 @@ export async function updateCategory(
 
     const res = await fetch(`${API_URL}/categories/${id}`, {
       method: 'PUT',
+      headers: { ...getAuthHeaders() },
       body: formData,
     });
     const json = await res.json();
@@ -331,6 +341,7 @@ export async function deleteCategory(id: string): Promise<ApiResponse<void>> {
   try {
     const res = await fetch(`${API_URL}/categories/${id}`, {
       method: 'DELETE',
+      headers: { ...getAuthHeaders() },
     });
     if (!res.ok) {
       const json = await res.json();
@@ -374,6 +385,7 @@ export async function createProduct(data: FormData): Promise<ApiResponse<Product
   try {
     const res = await fetch(`${API_URL}/products`, {
       method: 'POST',
+      headers: { ...getAuthHeaders() },
       body: data,
     });
     const json = await res.json();
@@ -391,6 +403,7 @@ export async function updateProduct(
   try {
     const res = await fetch(`${API_URL}/products/${id}`, {
       method: 'PUT',
+      headers: { ...getAuthHeaders() },
       body: data,
     });
     const json = await res.json();
@@ -405,6 +418,7 @@ export async function deleteProduct(id: string): Promise<ApiResponse<void>> {
   try {
     const res = await fetch(`${API_URL}/products/${id}`, {
       method: 'DELETE',
+      headers: { ...getAuthHeaders() },
     });
     if (!res.ok) {
       const json = await res.json();
@@ -428,7 +442,9 @@ export interface User {
 
 export async function getUsers(): Promise<ApiResponse<User[]>> {
   try {
-    const res = await fetch(`${API_URL}/users`);
+    const res = await fetch(`${API_URL}/users`, {
+      headers: { ...getAuthHeaders() },
+    });
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Gagal memuat users' };
     return { data: json };
@@ -444,7 +460,7 @@ export async function updateUserRole(
   try {
     const res = await fetch(`${API_URL}/users/${id}/role`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ role }),
     });
     const json = await res.json();
@@ -630,7 +646,10 @@ export async function getOrders(userId?: string, noCache?: boolean): Promise<Api
     if (noCache) {
       url += (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
     }
-    const res = await fetch(url, noCache ? { cache: 'no-store' } : undefined);
+    const res = await fetch(url, {
+      headers: { ...getAuthHeaders() },
+      ...(noCache ? { cache: 'no-store' } : {}),
+    });
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Gagal memuat pesanan' };
     return { data: json };
@@ -643,7 +662,7 @@ export async function updateOrderStatus(orderId: string, status: string): Promis
   try {
     const res = await fetch(`${API_URL}/payment/orders/${orderId}/status`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ status }),
     });
     const json = await res.json();
@@ -701,7 +720,7 @@ export async function createPromo(data: Partial<Promo>): Promise<ApiResponse<Pro
   try {
     const res = await fetch(`${API_URL}/promos`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(data),
     });
     const json = await res.json();
@@ -716,7 +735,7 @@ export async function updatePromo(id: string, data: Partial<Promo>): Promise<Api
   try {
     const res = await fetch(`${API_URL}/promos/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(data),
     });
     const json = await res.json();
@@ -729,7 +748,10 @@ export async function updatePromo(id: string, data: Partial<Promo>): Promise<Api
 
 export async function deletePromo(id: string): Promise<ApiResponse<void>> {
   try {
-    const res = await fetch(`${API_URL}/promos/${id}`, { method: 'DELETE' });
+    const res = await fetch(`${API_URL}/promos/${id}`, {
+      method: 'DELETE',
+      headers: { ...getAuthHeaders() },
+    });
     if (!res.ok) {
       const json = await res.json();
       return { error: json.message || 'Gagal menghapus promo' };
@@ -951,6 +973,7 @@ export async function deleteUser(id: string): Promise<ApiResponse<void>> {
   try {
     const res = await fetch(`${API_URL}/users/${id}`, {
       method: 'DELETE',
+      headers: { ...getAuthHeaders() },
     });
     if (!res.ok) {
       const json = await res.json();

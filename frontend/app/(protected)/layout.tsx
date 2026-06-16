@@ -180,6 +180,8 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   function handleLogout() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    // Also clear cookie
+    document.cookie = "token=; path=/; max-age=0";
     toast.success("Berhasil keluar");
     router.push("/masuk");
   }

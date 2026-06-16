@@ -8,17 +8,34 @@ import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/navbar";
-import { login } from "@/lib/api";
+import { login, resendVerification } from "@/lib/api";
 
 export default function MasukPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
+  const [resending, setResending] = useState(false);
+
+  async function handleResendVerification() {
+    if (!unverifiedEmail) return;
+    setResending(true);
+    const result = await resendVerification(unverifiedEmail);
+    setResending(false);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success("Email verifikasi telah dikirim ulang!");
+      setUnverifiedEmail("");
+      setError("");
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+    setUnverifiedEmail("");
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
@@ -31,12 +48,18 @@ export default function MasukPage() {
       setError(result.error);
       toast.error(result.error);
       setLoading(false);
+      // Check if the error is about unverified email
+      if (result.error.toLowerCase().includes("belum diverifikasi")) {
+        setUnverifiedEmail(email);
+      }
       return;
     }
 
     if (result.data?.token) {
       localStorage.setItem("token", result.data.token);
       localStorage.setItem("user", JSON.stringify(result.data.user));
+      // Also set cookie for middleware
+      document.cookie = `token=${result.data.token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
     }
 
     toast.success("Login berhasil!");
@@ -74,6 +97,15 @@ export default function MasukPage() {
             {error && (
               <div className="mt-6 rounded-lg bg-red-50 p-3 text-sm text-red-600">
                 {error}
+                {unverifiedEmail && (
+                  <button
+                    onClick={handleResendVerification}
+                    disabled={resending}
+                    className="ml-1 font-semibold underline hover:no-underline disabled:opacity-50"
+                  >
+                    {resending ? "Mengirim..." : "Kirim ulang email verifikasi"}
+                  </button>
+                )}
               </div>
             )}
 

@@ -84,7 +84,7 @@ export default function AdminDashboardPage() {
   }
 
   function formatCompact(price: number) {
-    if (price >= 1000000) return `Rp ${(price / 1000000).toFixed(1)}M`;
+    if (price >= 1000000) return `Rp ${(price / 1000000).toFixed(1)} Juta`;
     if (price >= 1000) return `Rp ${(price / 1000).toFixed(0)}K`;
     return `Rp ${price}`;
   }
