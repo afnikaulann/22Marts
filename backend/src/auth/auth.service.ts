@@ -71,7 +71,7 @@ export class AuthService {
 
     try {
       const { data, error } = await this.resend.emails.send({
-        from: '22Mart <onboarding@resend.dev>',
+        from: '22Mart <noreply@22mart.id>',
         to: dto.email,
         subject: 'Verifikasi Email 22Mart',
         html: `
@@ -208,7 +208,7 @@ export class AuthService {
 
     try {
       const { data, error } = await this.resend.emails.send({
-        from: '22Mart <onboarding@resend.dev>',
+        from: '22Mart <noreply@22mart.id>',
         to: user.email,
         subject: 'Reset Kata Sandi 22Mart',
         html: `
@@ -362,7 +362,7 @@ export class AuthService {
 
     try {
       const { data, error } = await this.resend.emails.send({
-        from: '22Mart <onboarding@resend.dev>',
+        from: '22Mart <noreply@22mart.id>',
         to: dto.email,
         subject: 'Verifikasi Email 22Mart',
         html: `
