@@ -1,4 +1,14 @@
 import 'dotenv/config';
+// Polyfill WebSocket untuk Node.js < 22 (Penting untuk Supabase)
+if (typeof global !== 'undefined' && !(global as any).WebSocket) {
+  try {
+    (global as any).WebSocket = require('ws');
+    console.log('[Polyfill] WebSocket has been loaded globally');
+  } catch (e) {
+    console.warn('[Polyfill] Failed to load ws package. Please run "pnpm add ws"');
+  }
+}
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';

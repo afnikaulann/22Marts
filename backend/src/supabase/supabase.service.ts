@@ -6,9 +6,22 @@ export class SupabaseService {
   private supabase: SupabaseClient;
 
   constructor() {
+    // Solusi Paksa: Gunakan require untuk memastikan WebSocket terdeteksi di Node.js < 22
+    const ws = require('ws');
+    
+    // Pasang ke global agar library Supabase bisa menemukannya
+    if (typeof global !== 'undefined' && !(global as any).WebSocket) {
+      (global as any).WebSocket = ws;
+    }
+
     this.supabase = createClient(
-      process.env.PROJECT_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      process.env.PROJECT_URL || '',
+      process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+      {
+        realtime: {
+          transport: ws,
+        },
+      },
     );
   }
 
