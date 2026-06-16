@@ -4,6 +4,14 @@ const getBaseUrl = () => {
     if (window.location.hostname === "22mart.id") {
       return "https://22mart.id/api";
     }
+    // Auto-detect local development
+    if (
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname.startsWith("192.168.")
+    ) {
+      return process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+    }
   }
   // Server-side or fallback
   return process.env.NEXT_PUBLIC_API_URL || "https://22mart.id/api";
