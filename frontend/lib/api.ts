@@ -1,4 +1,15 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+const getBaseUrl = () => {
+  if (typeof window !== "undefined") {
+    // Client-side: use the current domain
+    if (window.location.hostname === "22mart.id") {
+      return "https://22mart.id/api";
+    }
+  }
+  // Server-side or fallback
+  return process.env.NEXT_PUBLIC_API_URL || "https://22mart.id/api";
+};
+
+const API_URL = getBaseUrl();
 
 // Mapping nama kategori ke gambar Unsplash (Real Photo)
 export const categoryImages: Record<string, string> = {

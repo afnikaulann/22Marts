@@ -66,7 +66,7 @@ export class AuthService {
     });
 
     // Send verification email
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://22mart.id';
     const verifyLink = `${frontendUrl}/verifikasi-email?token=${verifyToken}`;
 
     try {
@@ -201,7 +201,7 @@ export class AuthService {
       { expiresIn: '15m' },
     );
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://22mart.id';
     const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
 
     console.log(`[Resend] Mengirim email reset password ke: ${user.email}`);
@@ -357,7 +357,7 @@ export class AuthService {
     });
 
     // Send verification email
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://22mart.id';
     const verifyLink = `${frontendUrl}/verifikasi-email?token=${verifyToken}`;
 
     try {
