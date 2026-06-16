@@ -10,11 +10,13 @@ export class JwtAuthGuard implements CanActivate {
     const authHeader = request.headers.authorization;
 
     if (!authHeader) {
+      console.log('[JwtAuthGuard] No authHeader found in request headers!');
       throw new UnauthorizedException('Token tidak ditemukan');
     }
 
     const [type, token] = authHeader.split(' ');
     if (type !== 'Bearer' || !token) {
+      console.log('[JwtAuthGuard] Invalid token format. authHeader:', authHeader);
       throw new UnauthorizedException('Format token tidak valid');
     }
 
@@ -26,7 +28,8 @@ export class JwtAuthGuard implements CanActivate {
         role: payload.role,
       };
       return true;
-    } catch {
+    } catch (err) {
+      console.log('[JwtAuthGuard] verifyAsync failed!', err);
       throw new UnauthorizedException('Token tidak valid atau sudah kadaluarsa');
     }
   }
