@@ -7,7 +7,7 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const authHeader = request.headers.authorization;
+    const authHeader = request.headers.authorization || (request.headers['x-auth-token'] ? `Bearer ${request.headers['x-auth-token']}` : undefined);
 
     if (!authHeader) {
       console.log('[JwtAuthGuard] No authHeader found in request headers!');

@@ -24,7 +24,10 @@ function getAuthHeaders(): Record<string, string> {
   if (typeof window === "undefined") return {};
   const token = localStorage.getItem("token");
   if (!token) return {};
-  return { Authorization: `Bearer ${token}` };
+  return { 
+    Authorization: `Bearer ${token}`,
+    'X-Auth-Token': token
+  };
 }
 
 // Mapping nama kategori ke gambar Unsplash (Real Photo)
