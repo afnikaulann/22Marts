@@ -614,7 +614,10 @@ export async function createPayment(data: {
   try {
     const res = await fetch(`${API_URL}/payment/create`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        ...getAuthHeaders()
+      },
       body: JSON.stringify(data),
     });
     const json = await res.json();

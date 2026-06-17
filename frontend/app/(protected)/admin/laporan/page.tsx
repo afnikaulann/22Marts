@@ -54,7 +54,7 @@ export default function LaporanPage() {
       <div className="rounded-lg border border-zinc-200 bg-white p-4">
         <h2 className="mb-4 text-sm font-semibold">Tren Pendapatan & Pesanan</h2>
         <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <LineChart data={monthlyData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" />
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#71717a" }} axisLine={false} tickLine={false} />
