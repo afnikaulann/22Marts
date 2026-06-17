@@ -1,0 +1,221 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String     @id @default(cuid())
+  name          String
+  email         String     @unique
+  password      String
+  role          Role       @default(USER)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  emailVerified Boolean    @default(false)
+  addresses     Address[]
+  cartItems     CartItem[]
+  favorites     Favorite[]
+  orders        Order[]
+
+  @@map("users")
+}
+
+model PendingRegistration {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  password    String
+  verifyToken String   @unique
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  @@map("pending_registrations")
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  label      String
+  name       String
+  phone      String
+  address    String
+  province   String
+  provinceId String
+  city       String
+  cityId     String
+  district   String
+  districtId String
+  village    String
+  villageId  String
+  postalCode String
+  notes      String?
+  isDefault  Boolean  @default(false)
+  userId     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  icon      String?
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  thumbnail String?
+  products  Product[]
+  promos    Promo[]   @relation("PromoCategories")
+
+  @@map("categories")
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  description String?
+  price       Int
+  stock       Int         @default(0)
+  thumbnail   String?
+  isActive    Boolean     @default(true)
+  categoryId  String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  cartItems   CartItem[]
+  favorites   Favorite[]
+  orderItems  OrderItem[]
+  category    Category    @relation(fields: [categoryId], references: [id])
+  promos      Promo[]     @relation("PromoProducts")
+
+  @@map("products")
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  quantity  Int      @default(1)
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("cart_items")
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderId         String      @unique
+  idempotencyKey  String      @unique
+  status          OrderStatus @default(DIPROSES)
+  subtotal        Int
+  discount        Int         @default(0)
+  promoCode       String?
+  total           Int
+  shippingName    String
+  shippingPhone   String
+  shippingAddress String
+  notes           String?
+  paymentStatus   String?
+  paymentType     String?
+  snapToken       String?
+  userId          String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  items           OrderItem[]
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  quantity  Int
+  price     Int
+  orderId   String
+  productId String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("favorites")
+}
+
+model Promo {
+  id            String       @id @default(cuid())
+  code          String       @unique
+  description   String?
+  discountType  DiscountType
+  discountValue Int
+  minPurchase   Int          @default(0)
+  maxDiscount   Int?
+  usageLimit    Int?
+  usedCount     Int          @default(0)
+  perUserLimit  Int          @default(0)
+  startDate     DateTime
+  endDate       DateTime
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  usages        PromoUsage[]
+  categories    Category[]   @relation("PromoCategories")
+  products      Product[]    @relation("PromoProducts")
+
+  @@map("promos")
+}
+
+model PromoUsage {
+  id        String   @id @default(cuid())
+  userId    String
+  promoId   String
+  createdAt DateTime @default(now())
+  promo     Promo    @relation(fields: [promoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, promoId])
+  @@map("promo_usages")
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  phone     String   @unique
+  createdAt DateTime @default(now())
+
+  @@map("newsletter_subscribers")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  DIPROSES
+  DIKIRIM
+  SELESAI
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}

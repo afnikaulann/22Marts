@@ -195,52 +195,71 @@ export class PaymentService {
       }));
     }
 
-    const transaction = await this.snap.createTransaction(transactionPayload);
+    console.log('[PaymentService] Creating transaction for user:', data.userId);
+    let transaction;
+    try {
+      transaction = await this.snap.createTransaction(transactionPayload);
+    } catch (err) {
+      console.error('[PaymentService] Midtrans API error:', err?.message || err);
+      throw new BadRequestException('Gagal membuat transaksi pembayaran. Silakan coba lagi.');
+    }
+    console.log('[PaymentService] Midtrans transaction created:', transaction.token);
 
     // Create order in DB
     const shippingAddress = `${address.address}, ${address.village}, ${address.district}, ${address.city}, ${address.province}, ${address.postalCode}`;
 
-    const order = await this.prisma.order.create({
-      data: {
-        orderId,
-        idempotencyKey: data.idempotencyKey,
-        subtotal,
-        discount,
-        promoCode: discount > 0 ? (data.promoCode || null) : null,
-        total,
-        shippingName: address.name,
-        shippingPhone: address.phone,
-        shippingAddress,
-        notes: data.notes,
-        snapToken: transaction.token,
-        userId: data.userId,
-        items: {
-          create: cart.map((item) => ({
-            quantity: item.quantity,
-            price: item.product.price,
-            productId: item.productId,
-          })),
+    console.log('[PaymentService] Creating order in DB...');
+    try {
+      const order = await this.prisma.order.create({
+        data: {
+          orderId,
+          idempotencyKey: data.idempotencyKey,
+          subtotal,
+          discount,
+          promoCode: discount > 0 ? (data.promoCode || null) : null,
+          total,
+          shippingName: address.name,
+          shippingPhone: address.phone,
+          shippingAddress,
+          notes: data.notes,
+          snapToken: transaction.token,
+          paymentStatus: 'settlement',
+          paymentType: 'direct',
+          userId: data.userId,
+          items: {
+            create: cart.map((item) => ({
+              quantity: item.quantity,
+              price: item.product.price,
+              productId: item.productId,
+            })),
+          },
         },
-      },
-      include: { items: { include: { product: true } } },
-    });
-
-    // Kurangi stok produk
-    for (const item of cart) {
-      await this.prisma.product.update({
-        where: { id: item.productId },
-        data: { stock: { decrement: item.quantity } }
+        include: { items: { include: { product: true } } },
       });
+      console.log('[PaymentService] Order created successfully:', order.id);
+
+      // Kurangi stok produk
+      for (const item of cart) {
+        await this.prisma.product.update({
+          where: { id: item.productId },
+          data: { stock: { decrement: item.quantity } }
+        });
+      }
+
+      // Clear cart
+      await this.prisma.cartItem.deleteMany({ where: { userId: data.userId } });
+
+      return {
+        order,
+        token: transaction.token,
+        redirectUrl: transaction.redirect_url,
+      };
+    } catch (error) {
+      const fs = require('fs');
+      fs.appendFileSync('error.log', `[${new Date().toISOString()}] Error creating order: ${error.stack}\n`);
+      console.error('[PaymentService] Error creating order:', error);
+      throw error;
     }
-
-    // Clear cart
-    await this.prisma.cartItem.deleteMany({ where: { userId: data.userId } });
-
-    return {
-      order,
-      token: transaction.token,
-      redirectUrl: transaction.redirect_url,
-    };
   }
 
   async getPaymentStatus(orderId: string) {

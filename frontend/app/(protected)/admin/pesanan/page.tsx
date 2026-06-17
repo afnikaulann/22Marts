@@ -123,7 +123,7 @@ export default function KelolaPesananPage() {
       const dateObj = new Date(order.createdAt);
       const tanggal = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
       const jam = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-      const paymentLabel = order.paymentStatus === 'settlement' ? 'Lunas' : (order.paymentStatus || 'Pending');
+      const paymentLabel = order.paymentStatus === 'settlement' ? 'Selesai' : (order.paymentStatus || 'Pending');
       return [
         idx + 1,
         order.orderId,

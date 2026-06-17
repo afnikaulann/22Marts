@@ -30,6 +30,24 @@ function getAuthHeaders(): Record<string, string> {
   };
 }
 
+// Helper: auth fetch options (headers + credentials for cookies)
+function authFetchOptions(extra?: RequestInit): RequestInit {
+  return {
+    ...extra,
+    headers: { ...getAuthHeaders(), ...(extra?.headers || {}) },
+    credentials: 'include',
+  };
+}
+
+// Helper: append token as query param (last resort fallback for nginx stripping headers)
+function withTokenQuery(url: string): string {
+  if (typeof window === "undefined") return url;
+  const token = localStorage.getItem("token");
+  if (!token) return url;
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}token=${encodeURIComponent(token)}`;
+}
+
 // Mapping nama kategori ke gambar Unsplash (Real Photo)
 export const categoryImages: Record<string, string> = {
   "sayur": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&h=600&fit=crop",
@@ -302,11 +320,10 @@ export async function createCategory(data: {
     if (data.isActive !== undefined) formData.append('isActive', String(data.isActive));
     if (file) formData.append('file', file);
 
-    const res = await fetch(`${API_URL}/categories`, {
+    const res = await fetch(`${API_URL}/categories`, authFetchOptions({
       method: 'POST',
-      headers: { ...getAuthHeaders() },
       body: formData,
-    });
+    }));
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Gagal membuat kategori' };
     return { data: json };
@@ -327,11 +344,10 @@ export async function updateCategory(
     if (data.isActive !== undefined) formData.append('isActive', String(data.isActive));
     if (file) formData.append('file', file);
 
-    const res = await fetch(`${API_URL}/categories/${id}`, {
+    const res = await fetch(`${API_URL}/categories/${id}`, authFetchOptions({
       method: 'PUT',
-      headers: { ...getAuthHeaders() },
       body: formData,
-    });
+    }));
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Gagal mengupdate kategori' };
     return { data: json };
@@ -342,10 +358,9 @@ export async function updateCategory(
 
 export async function deleteCategory(id: string): Promise<ApiResponse<void>> {
   try {
-    const res = await fetch(`${API_URL}/categories/${id}`, {
+    const res = await fetch(`${API_URL}/categories/${id}`, authFetchOptions({
       method: 'DELETE',
-      headers: { ...getAuthHeaders() },
-    });
+    }));
     if (!res.ok) {
       const json = await res.json();
       return { error: json.message || 'Gagal menghapus kategori' };
@@ -386,11 +401,10 @@ export async function getProductBySlug(slug: string): Promise<ApiResponse<Produc
 
 export async function createProduct(data: FormData): Promise<ApiResponse<Product>> {
   try {
-    const res = await fetch(`${API_URL}/products`, {
+    const res = await fetch(`${API_URL}/products`, authFetchOptions({
       method: 'POST',
-      headers: { ...getAuthHeaders() },
       body: data,
-    });
+    }));
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Gagal membuat produk' };
     return { data: json };
@@ -404,11 +418,10 @@ export async function updateProduct(
   data: FormData
 ): Promise<ApiResponse<Product>> {
   try {
-    const res = await fetch(`${API_URL}/products/${id}`, {
+    const res = await fetch(`${API_URL}/products/${id}`, authFetchOptions({
       method: 'PUT',
-      headers: { ...getAuthHeaders() },
       body: data,
-    });
+    }));
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Gagal mengupdate produk' };
     return { data: json };
@@ -419,10 +432,9 @@ export async function updateProduct(
 
 export async function deleteProduct(id: string): Promise<ApiResponse<void>> {
   try {
-    const res = await fetch(`${API_URL}/products/${id}`, {
+    const res = await fetch(`${API_URL}/products/${id}`, authFetchOptions({
       method: 'DELETE',
-      headers: { ...getAuthHeaders() },
-    });
+    }));
     if (!res.ok) {
       const json = await res.json();
       return { error: json.message || 'Gagal menghapus produk' };
@@ -445,9 +457,7 @@ export interface User {
 
 export async function getUsers(): Promise<ApiResponse<User[]>> {
   try {
-    const res = await fetch(`${API_URL}/users`, {
-      headers: { ...getAuthHeaders() },
-    });
+    const res = await fetch(withTokenQuery(`${API_URL}/users`), authFetchOptions());
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Gagal memuat users' };
     return { data: json };
@@ -461,11 +471,11 @@ export async function updateUserRole(
   role: 'USER' | 'ADMIN'
 ): Promise<ApiResponse<User>> {
   try {
-    const res = await fetch(`${API_URL}/users/${id}/role`, {
+    const res = await fetch(`${API_URL}/users/${id}/role`, authFetchOptions({
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ role }),
-    });
+    }));
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Gagal mengupdate role' };
     return { data: json };
@@ -612,14 +622,11 @@ export async function createPayment(data: {
   promoCode?: string;
 }): Promise<ApiResponse<{ order: Order; token: string; redirectUrl: string | null }>> {
   try {
-    const res = await fetch(`${API_URL}/payment/create`, {
+    const res = await fetch(`${API_URL}/payment/create`, authFetchOptions({
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        ...getAuthHeaders()
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
-    });
+    }));
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Gagal membuat pembayaran' };
     return { data: json };
@@ -652,10 +659,7 @@ export async function getOrders(userId?: string, noCache?: boolean): Promise<Api
     if (noCache) {
       url += (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
     }
-    const res = await fetch(url, {
-      headers: { ...getAuthHeaders() },
-      ...(noCache ? { cache: 'no-store' } : {}),
-    });
+    const res = await fetch(url, authFetchOptions(noCache ? { cache: 'no-store' } : undefined));
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Gagal memuat pesanan' };
     return { data: json };
@@ -666,11 +670,11 @@ export async function getOrders(userId?: string, noCache?: boolean): Promise<Api
 
 export async function updateOrderStatus(orderId: string, status: string): Promise<ApiResponse<Order>> {
   try {
-    const res = await fetch(`${API_URL}/payment/orders/${orderId}/status`, {
+    const res = await fetch(`${API_URL}/payment/orders/${orderId}/status`, authFetchOptions({
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
-    });
+    }));
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Gagal mengupdate status' };
     return { data: json };
@@ -681,7 +685,7 @@ export async function updateOrderStatus(orderId: string, status: string): Promis
 
 export async function getOrderByOrderId(orderId: string): Promise<ApiResponse<Order>> {
   try {
-    const res = await fetch(`${API_URL}/payment/orders/${orderId}`);
+    const res = await fetch(`${API_URL}/payment/orders/${orderId}`, authFetchOptions());
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Pesanan tidak ditemukan' };
     return { data: json };
@@ -724,11 +728,11 @@ export async function getPromos(): Promise<ApiResponse<Promo[]>> {
 
 export async function createPromo(data: Partial<Promo>): Promise<ApiResponse<Promo>> {
   try {
-    const res = await fetch(`${API_URL}/promos`, {
+    const res = await fetch(`${API_URL}/promos`, authFetchOptions({
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
-    });
+    }));
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Gagal membuat promo' };
     return { data: json };
@@ -739,11 +743,11 @@ export async function createPromo(data: Partial<Promo>): Promise<ApiResponse<Pro
 
 export async function updatePromo(id: string, data: Partial<Promo>): Promise<ApiResponse<Promo>> {
   try {
-    const res = await fetch(`${API_URL}/promos/${id}`, {
+    const res = await fetch(`${API_URL}/promos/${id}`, authFetchOptions({
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
-    });
+    }));
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Gagal mengupdate promo' };
     return { data: json };
@@ -754,10 +758,9 @@ export async function updatePromo(id: string, data: Partial<Promo>): Promise<Api
 
 export async function deletePromo(id: string): Promise<ApiResponse<void>> {
   try {
-    const res = await fetch(`${API_URL}/promos/${id}`, {
+    const res = await fetch(`${API_URL}/promos/${id}`, authFetchOptions({
       method: 'DELETE',
-      headers: { ...getAuthHeaders() },
-    });
+    }));
     if (!res.ok) {
       const json = await res.json();
       return { error: json.message || 'Gagal menghapus promo' };
@@ -977,10 +980,9 @@ export async function setDefaultAddress(id: string, userId: string): Promise<Api
 
 export async function deleteUser(id: string): Promise<ApiResponse<void>> {
   try {
-    const res = await fetch(`${API_URL}/users/${id}`, {
+    const res = await fetch(`${API_URL}/users/${id}`, authFetchOptions({
       method: 'DELETE',
-      headers: { ...getAuthHeaders() },
-    });
+    }));
     if (!res.ok) {
       const json = await res.json();
       return { error: json.message || 'Gagal menghapus user' };

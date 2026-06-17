@@ -58,8 +58,9 @@ export default function MasukPage() {
     if (result.data?.token) {
       localStorage.setItem("token", result.data.token);
       localStorage.setItem("user", JSON.stringify(result.data.user));
-      // Also set cookie for middleware
-      document.cookie = `token=${result.data.token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+      // Set cookie for middleware & backend auth fallback (nginx always forwards cookies)
+      const isSecure = window.location.protocol === "https:";
+      document.cookie = `token=${result.data.token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax${isSecure ? "; Secure" : ""}`;
     }
 
     toast.success("Login berhasil!");

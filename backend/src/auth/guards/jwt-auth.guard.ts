@@ -7,18 +7,65 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const authHeader = request.headers.authorization || (request.headers['x-auth-token'] ? `Bearer ${request.headers['x-auth-token']}` : undefined);
 
-    if (!authHeader) {
-      console.log('[JwtAuthGuard] No authHeader found in request headers!');
+    // Try multiple sources for the token:
+    // 1. Authorization header (standard)
+    // 2. X-Auth-Token header (nginx fallback)
+    // 3. Cookie (most reliable — nginx always forwards cookies)
+    // 4. Query parameter ?token=xxx (last resort)
+    let token: string | undefined;
+    let source = 'none';
+
+    // 1. Authorization: Bearer xxx
+    const authHeader = request.headers.authorization;
+    if (authHeader) {
+      const [type, t] = authHeader.split(' ');
+      if (type === 'Bearer' && t) {
+        token = t;
+        source = 'Authorization header';
+      }
+    }
+
+    // 2. X-Auth-Token: xxx
+    if (!token) {
+      const xAuthToken = request.headers['x-auth-token'];
+      if (typeof xAuthToken === 'string' && xAuthToken) {
+        token = xAuthToken;
+        source = 'X-Auth-Token header';
+      }
+    }
+
+    // 3. Cookie: token=xxx
+    if (!token) {
+      const cookieHeader = request.headers.cookie;
+      if (cookieHeader) {
+        const cookies = cookieHeader.split(';').reduce((acc, c) => {
+          const [key, ...vals] = c.trim().split('=');
+          acc[key] = vals.join('=');
+          return acc;
+        }, {} as Record<string, string>);
+        if (cookies['token']) {
+          token = cookies['token'];
+          source = 'Cookie';
+        }
+      }
+    }
+
+    // 4. Query parameter: ?token=xxx
+    if (!token) {
+      const queryToken = request.query?.token;
+      if (typeof queryToken === 'string' && queryToken) {
+        token = queryToken;
+        source = 'Query parameter';
+      }
+    }
+
+    if (!token) {
+      console.log('[JwtAuthGuard] NO TOKEN FOUND. Headers:', JSON.stringify(Object.keys(request.headers)));
       throw new UnauthorizedException('Token tidak ditemukan');
     }
 
-    const [type, token] = authHeader.split(' ');
-    if (type !== 'Bearer' || !token) {
-      console.log('[JwtAuthGuard] Invalid token format. authHeader:', authHeader);
-      throw new UnauthorizedException('Format token tidak valid');
-    }
+    console.log(`[JwtAuthGuard] Token found via: ${source}`);
 
     try {
       const payload = await this.jwtService.verifyAsync(token);
@@ -29,7 +76,7 @@ export class JwtAuthGuard implements CanActivate {
       };
       return true;
     } catch (err) {
-      console.log('[JwtAuthGuard] verifyAsync failed!', err);
+      console.log('[JwtAuthGuard] Token verification failed:', err?.message || err);
       throw new UnauthorizedException('Token tidak valid atau sudah kadaluarsa');
     }
   }
