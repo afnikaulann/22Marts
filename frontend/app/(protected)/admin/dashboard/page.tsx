@@ -271,7 +271,7 @@ export default function AdminDashboardPage() {
           </div>
           <div className="h-52">
             {mounted && (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <AreaChart data={revenueByDay}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" />
                   <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#71717a" }} axisLine={false} tickLine={false} />
@@ -295,7 +295,7 @@ export default function AdminDashboardPage() {
           </div>
           <div className="h-36">
             {mounted && pieData.length > 0 && (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <PieChart>
                   <Pie data={pieData} cx="50%" cy="50%" innerRadius={35} outerRadius={55} dataKey="value" paddingAngle={2}>
                     {pieData.map((entry, index) => (
@@ -335,7 +335,7 @@ export default function AdminDashboardPage() {
           </div>
           <div className="h-40">
             {mounted && (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <BarChart data={ordersByDay}>
                   <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#71717a" }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: "#71717a" }} axisLine={false} tickLine={false} allowDecimals={false} />

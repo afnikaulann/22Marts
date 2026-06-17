@@ -19,10 +19,14 @@ const getBaseUrl = () => {
 
 const API_URL = getBaseUrl();
 
-// Helper: get auth headers from localStorage
+// Helper: get auth headers from localStorage or cookies
 function getAuthHeaders(): Record<string, string> {
   if (typeof window === "undefined") return {};
-  const token = localStorage.getItem("token");
+  let token = localStorage.getItem("token");
+  if (!token) {
+    const match = document.cookie.match(new RegExp('(^| )token=([^;]+)'));
+    if (match) token = match[2];
+  }
   if (!token) return {};
   return { 
     Authorization: `Bearer ${token}`,
@@ -42,7 +46,11 @@ function authFetchOptions(extra?: RequestInit): RequestInit {
 // Helper: append token as query param (last resort fallback for nginx stripping headers)
 function withTokenQuery(url: string): string {
   if (typeof window === "undefined") return url;
-  const token = localStorage.getItem("token");
+  let token = localStorage.getItem("token");
+  if (!token) {
+    const match = document.cookie.match(new RegExp('(^| )token=([^;]+)'));
+    if (match) token = match[2];
+  }
   if (!token) return url;
   const sep = url.includes('?') ? '&' : '?';
   return `${url}${sep}token=${encodeURIComponent(token)}`;
@@ -659,7 +667,7 @@ export async function getOrders(userId?: string, noCache?: boolean): Promise<Api
     if (noCache) {
       url += (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
     }
-    const res = await fetch(url, authFetchOptions(noCache ? { cache: 'no-store' } : undefined));
+    const res = await fetch(withTokenQuery(url), authFetchOptions(noCache ? { cache: 'no-store' } : undefined));
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Gagal memuat pesanan' };
     return { data: json };
@@ -685,7 +693,7 @@ export async function updateOrderStatus(orderId: string, status: string): Promis
 
 export async function getOrderByOrderId(orderId: string): Promise<ApiResponse<Order>> {
   try {
-    const res = await fetch(`${API_URL}/payment/orders/${orderId}`, authFetchOptions());
+    const res = await fetch(withTokenQuery(`${API_URL}/payment/orders/${orderId}`), authFetchOptions());
     const json = await res.json();
     if (!res.ok) return { error: json.message || 'Pesanan tidak ditemukan' };
     return { data: json };
